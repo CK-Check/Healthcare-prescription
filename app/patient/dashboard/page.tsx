@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import VitalsDisplay from '../../components/patient/VitalsDisplay';
+import { useRouter } from 'next/navigation';
 
 // Mock data - replace with actual API calls
 const mockData = {
@@ -42,6 +43,7 @@ const mockData = {
 
 export default function PatientDashboard() {
   const [activeTab, setActiveTab] = useState<'vitals' | 'prescriptions'>('vitals');
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -49,9 +51,17 @@ export default function PatientDashboard() {
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-gray-900">Patient Dashboard</h1>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Welcome back,</p>
-              <p className="text-lg font-semibold">{mockData.patientInfo.name}</p>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => router.push('/ai-health')}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                AI Health Assistant
+              </button>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Welcome back,</p>
+                <p className="text-lg font-semibold">{mockData.patientInfo.name}</p>
+              </div>
             </div>
           </div>
         </div>
