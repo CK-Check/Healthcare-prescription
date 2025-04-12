@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import VitalsDisplay from '../../components/patient/VitalsDisplay';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 // Mock data - replace with actual API calls
 const mockData = {
@@ -33,6 +35,7 @@ const mockData = {
 
 export default function DoctorDashboard() {
   const [selectedPatient, setSelectedPatient] = useState(mockData.doctorInfo.patients[0]);
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -40,10 +43,27 @@ export default function DoctorDashboard() {
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-gray-900">Doctor Dashboard</h1>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Welcome,</p>
-              <p className="text-lg font-semibold">{mockData.doctorInfo.name}</p>
-              <p className="text-sm text-gray-500">{mockData.doctorInfo.specialty}</p>
+            <div className="flex items-center space-x-4">
+              <Link href="/doctor/appointments" className="text-gray-600 hover:text-gray-900">
+                Appointments
+              </Link>
+              <Link href="/doctor/patients" className="text-gray-600 hover:text-gray-900">
+                Patients
+              </Link>
+              <Link href="/doctor/prescriptions" className="text-gray-600 hover:text-gray-900">
+                Prescriptions
+              </Link>
+              <Link href="/ai-health" className="text-blue-600 hover:text-blue-800 font-medium">
+                AI Health Assistant
+              </Link>
+              <Link href="/video-call" className="text-green-600 hover:text-green-800 font-medium">
+                Video Call
+              </Link>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Welcome,</p>
+                <p className="text-lg font-semibold">{mockData.doctorInfo.name}</p>
+                <p className="text-sm text-gray-500">{mockData.doctorInfo.specialty}</p>
+              </div>
             </div>
           </div>
         </div>
