@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function LoginForm() {
   const [role, setRole] = useState<'doctor' | 'patient'>('patient');
@@ -92,6 +93,7 @@ export default function LoginForm() {
             </button>
           </div>
         </form>
+        <Image src="/images/login_pic.png" fill={true} alt="Login"/>
       </div>
     </div>
   );

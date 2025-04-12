@@ -23,15 +23,15 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h1 className="text-center text-4xl font-extrabold text-gray-900">
+          <h1 className="text-center text-4xl font-extrabold text-blue-600">
             HealthOrbit
           </h1>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-2xl font-extrabold text-gray-900">
             Sign in to your account
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
+          <div className="rounded-md shadow-sm space-y-3">
             <div className="flex justify-center space-x-4">
               <button
                 type="button"
@@ -97,6 +97,15 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
+        <div className="text-sm text-center">
+          <p>
+            Don't have an account?{' '}
+            <a href="/patient/signup" className="font-medium text-blue-600 hover:text-blue-500">
+              Sign up
+            </a>
+          </p>
+        </div>
+        {/* <Image src="/images/login_pic.png" fill={true} alt="Login"/> */}
       </div>
     </div>
   );
