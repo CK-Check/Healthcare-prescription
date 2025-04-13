@@ -167,14 +167,6 @@ export default function AIHealthPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-blue-600">AI Health Assistant</h1>
-          <div className="flex space-x-4">
-            <Link href="/doctor/dashboard" className="text-blue-600 hover:text-blue-800">
-              Back to Dashboard
-            </Link>
-            <Link href="/doctor/prescriptions" className="text-green-600 hover:text-green-800">
-              View Prescriptions
-            </Link>
-          </div>
         </div>
         
         {error && (

@@ -44,10 +44,7 @@ export default function DoctorDashboard() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-blue-600">Doctor Dashboard</h1>
             <div className="flex items-center space-x-4">
-              <Link href="/doctor/appointments" className="text-gray-600 hover:text-gray-900">
-                Appointments
-              </Link>
-              <Link href="/doctor/patients" className="text-gray-600 hover:text-gray-900">
+              <Link href="/doctor/patient" className="text-gray-600 hover:text-gray-900">
                 Patients
               </Link>
               <Link href="/doctor/prescriptions" className="text-gray-600 hover:text-gray-900">

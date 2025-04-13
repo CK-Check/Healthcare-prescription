@@ -14,15 +14,38 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setIsLoading(true);
     // TODO: Implement actual authentication
+    try{
     const response = await fetch('/api/login', {
-      method: 'GET',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({email, password})
     });
     
-    if (role === 'doctor') {
+    const data = await response.json(); 
+
+    if(!response.ok){
+      throw new Error(data.error || 'Login failed');
+    }
+    // Store user data in localStorage
+    localStorage.setItem('user', JSON.stringify(data.user));
+      
+    // Redirect based on user role
+    if (data.user.role === 'doctor') {
       router.push('/doctor/dashboard');
-    } else {
+    } else if (data.user.role === 'patient') {
       router.push('/patient/dashboard');
+    } else {
+      router.push('/');
+    }
+    } catch (error) {
+    setError(error instanceof Error ? error.message : 'Login failed');
+    } finally {
+    setIsLoading(false);
     }
   };
 
