@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 export default function PatientSignup() {
     const [role, setRole] = useState<'doctor' | 'patient'>('patient');
+    const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -15,18 +16,47 @@ export default function PatientSignup() {
         dateOfBirth: '',
         phoneNumber: '',
         address: '',
+        role: 'patient'
     });
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
        e.preventDefault();
        // TODO: Implement actual authentication
-       if (role === 'doctor') {
-         router.push('/doctor/dashboard');
-       } else {
-         router.push('/patient/dashboard');
+       try {
+        const dataToSend = {
+            ...formData,
+            role: 'patient' 
+        };
+        const response = await fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToSend),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Signup failed');
+        }
+
+        localStorage.setItem('user', JSON.stringify(data));
+            router.push('/patient/dashboard');
+       } catch (error) {
+        setError(error instanceof Error ? error.message : 'An unexpected error occurred');
        }
      };
+
+    const handleRoleAndPathChange = (newRole: 'doctor' | 'patient') => {
+        setRole(newRole);
+        if (newRole === 'doctor') {
+            router.push('/doctor/signup');
+        } else {
+            router.push('/patient/signup');
+        }
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({
@@ -43,11 +73,12 @@ export default function PatientSignup() {
                 </h2>
             </div>
             <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            
             <div className="flex justify-center space-x-4">
               <button
                 type="button"
-                onClick={() => setRole('patient')}
+                onClick={() => {
+                    handleRoleAndPathChange('patient');
+                }}
                 className={`px-4 py-2 rounded-md ${
                   role === 'patient'
                     ? 'bg-blue-600 text-white'
@@ -58,7 +89,9 @@ export default function PatientSignup() {
               </button>
               <button
                 type="button"
-                onClick={() => setRole('doctor')}
+                onClick={() => {
+                    handleRoleAndPathChange('doctor');
+                }}
                 className={`px-4 py-2 rounded-md ${
                   role === 'doctor'
                     ? 'bg-blue-600 text-white'
@@ -70,7 +103,6 @@ export default function PatientSignup() {
             </div>
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                    <form className="space-y-6" onSubmit={handleSubmit}>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
@@ -82,7 +114,7 @@ export default function PatientSignup() {
                                     required
                                     value={formData.firstName}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                 />
                             </div>
 
@@ -96,7 +128,7 @@ export default function PatientSignup() {
                                     required
                                     value={formData.lastName}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                                 />
                             </div>
                         </div>
@@ -111,7 +143,7 @@ export default function PatientSignup() {
                                 required
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             />
                         </div>
 
@@ -125,7 +157,7 @@ export default function PatientSignup() {
                                 required
                                 value={formData.password}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             />
                         </div>
 
@@ -139,7 +171,7 @@ export default function PatientSignup() {
                                 required
                                 value={formData.dateOfBirth}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             />
                         </div>
 
@@ -153,7 +185,7 @@ export default function PatientSignup() {
                                 required
                                 value={formData.phoneNumber}
                                 onChange={handleChange}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             />
                         </div>
 
@@ -167,24 +199,22 @@ export default function PatientSignup() {
                                 value={formData.address}
                                 onChange={handleChange}
                                 rows={3}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                             />
                         </div>
 
                         <div>
                             <button
                                 type="submit"
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                className="w-full flex justify-center my-3 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
                                 Sign up
                             </button>
                         </div>
-                    </form>
-
                     <div className="mt-6">
                         <p className="text-center text-sm text-gray-600">
                             Already have an account?{' '}
-                            <Link href="/" className="text-blue-600 hover:text-blue-500">
+                            <Link href="/" className="font-medium text-blue-600 hover:text-indigo-500">
                                 Sign in
                             </Link>
                         </p>

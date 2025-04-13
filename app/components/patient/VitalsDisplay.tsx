@@ -33,7 +33,6 @@ export default function VitalsDisplay({
   heartRate,
   bloodPressure,
   spo2,
-  pulse,
   labels,
 }: VitalProps) {
   const commonOptions = {
@@ -105,24 +104,6 @@ export default function VitalsDisplay({
                 data: spo2,
                 borderColor: 'rgb(153, 102, 255)',
                 backgroundColor: 'rgba(153, 102, 255, 0.5)',
-              },
-            ],
-          }}
-          options={commonOptions}
-        />
-      </div>
-
-      <div className="bg-white p-4 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Pulse</h3>
-        <Line
-          data={{
-            labels,
-            datasets: [
-              {
-                label: 'BPM',
-                data: pulse,
-                borderColor: 'rgb(255, 159, 64)',
-                backgroundColor: 'rgba(255, 159, 64, 0.5)',
               },
             ],
           }}
