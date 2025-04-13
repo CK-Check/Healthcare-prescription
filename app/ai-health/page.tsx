@@ -19,14 +19,17 @@ interface Prescription {
   doctor: string;
 }
 
+interface IoTData {
+  temperature: number;
+  heartRate: number;
+  bloodPressure: {
+    systolic: number;
+    diastolic: number;
+  };
+  spo2: number;
+}
+
 export default function AIHealthPage() {
-  const [vitals, setVitals] = useState({
-    heartRate: '',
-    bloodPressure: '',
-    temperature: '',
-    spo2: '',
-    symptoms: '',
-  });
   const [prediction, setPrediction] = useState<HealthPrediction | null>(null);
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [chatMessage, setChatMessage] = useState('');
@@ -34,6 +37,7 @@ export default function AIHealthPage() {
   const [model, setModel] = useState<HealthPredictionModel | null>(null);
   const [isModelLoading, setIsModelLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentVitals, setCurrentVitals] = useState<IoTData | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -52,31 +56,42 @@ export default function AIHealthPage() {
     initializeModel();
   }, []);
 
+  // Check for Blynk data updates
+  useEffect(() => {
+    const checkBlynkData = () => {
+      const vitalsData = localStorage.getItem('currentVitals');
+      if (vitalsData) {
+        setCurrentVitals(JSON.parse(vitalsData));
+      }
+    };
+
+    // Check immediately
+    checkBlynkData();
+
+    // Set up interval to check for updates
+    const interval = setInterval(checkBlynkData, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const predictHealth = async () => {
     if (!model || isModelLoading) {
       setError('Model is still loading. Please wait...');
       return;
     }
 
+    if (!currentVitals) {
+      setError('No vital signs data available from Blynk. Please wait for data...');
+      return;
+    }
+
     try {
-      // Validate inputs
-      if (!vitals.heartRate || !vitals.bloodPressure || !vitals.temperature || !vitals.spo2) {
-        setError('Please fill in all vital signs');
-        return;
-      }
-
-      const bloodPressure = vitals.bloodPressure.split('/').map(Number);
-      if (bloodPressure.length !== 2 || isNaN(bloodPressure[0]) || isNaN(bloodPressure[1])) {
-        setError('Please enter blood pressure in the format "systolic/diastolic"');
-        return;
-      }
-
       const prediction = model.predict({
-        heartRate: parseFloat(vitals.heartRate),
-        bloodPressure: bloodPressure[0], // Use systolic pressure
-        temperature: parseFloat(vitals.temperature),
-        spo2: parseFloat(vitals.spo2),
-        symptoms: vitals.symptoms.split(',').length
+        heartRate: currentVitals.heartRate,
+        bloodPressure: currentVitals.bloodPressure.systolic,
+        temperature: currentVitals.temperature,
+        spo2: currentVitals.spo2,
+        symptoms: 0 // We'll add symptoms later if needed
       });
 
       setPrediction(prediction);
@@ -101,9 +116,6 @@ export default function AIHealthPage() {
       doctor: 'AI Assistant',
     };
     setPrescriptions([...prescriptions, newPrescription]);
-    
-    // Redirect to prescriptions page
-    router.push('/doctor/prescriptions');
   };
 
   const getMedicationsForCondition = (condition: string): string[] => {
@@ -154,7 +166,7 @@ export default function AIHealthPage() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">AI Health Assistant</h1>
+          <h1 className="text-3xl font-bold text-blue-600">AI Health Assistant</h1>
           <div className="flex space-x-4">
             <Link href="/doctor/dashboard" className="text-blue-600 hover:text-blue-800">
               Back to Dashboard
@@ -178,67 +190,39 @@ export default function AIHealthPage() {
           </div>
         ) : (
           <>
-            {/* Vitals Input Section */}
+            {/* Current Vitals Display */}
             <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">Enter Your Vitals</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Heart Rate (BPM)</label>
-                  <input
-                    type="number"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={vitals.heartRate}
-                    onChange={(e) => setVitals({ ...vitals, heartRate: e.target.value })}
-                    placeholder="e.g., 72"
-                  />
+              <h2 className="text-xl font-semibold mb-4">Current Vitals from Blynk</h2>
+              {currentVitals ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Temperature</p>
+                    <p className="text-lg font-semibold">{currentVitals.temperature}°C</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Heart Rate</p>
+                    <p className="text-lg font-semibold">{currentVitals.heartRate} BPM</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Blood Pressure</p>
+                    <p className="text-lg font-semibold">
+                      {currentVitals.bloodPressure.systolic}/{currentVitals.bloodPressure.diastolic} mmHg
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">SpO2</p>
+                    <p className="text-lg font-semibold">{currentVitals.spo2}%</p>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Blood Pressure (mmHg)</label>
-                  <input
-                    type="text"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={vitals.bloodPressure}
-                    onChange={(e) => setVitals({ ...vitals, bloodPressure: e.target.value })}
-                    placeholder="e.g., 120/80"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Temperature (°C)</label>
-                  <input
-                    type="number"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={vitals.temperature}
-                    onChange={(e) => setVitals({ ...vitals, temperature: e.target.value })}
-                    placeholder="e.g., 36.5"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">SpO2 (%)</label>
-                  <input
-                    type="number"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={vitals.spo2}
-                    onChange={(e) => setVitals({ ...vitals, spo2: e.target.value })}
-                    placeholder="e.g., 98"
-                  />
-                </div>
-              </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">Symptoms (comma-separated)</label>
-                <textarea
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  rows={3}
-                  value={vitals.symptoms}
-                  onChange={(e) => setVitals({ ...vitals, symptoms: e.target.value })}
-                  placeholder="e.g., fever, cough, headache"
-                />
-              </div>
+              ) : (
+                <p className="text-gray-600">Waiting for Blynk data...</p>
+              )}
               <button
                 onClick={predictHealth}
                 className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                disabled={isModelLoading}
+                disabled={!currentVitals}
               >
-                {isModelLoading ? 'Analyzing...' : 'Analyze Health'}
+                Analyze Health
               </button>
             </div>
 
@@ -270,7 +254,7 @@ export default function AIHealthPage() {
             {/* Chat Interface */}
             <div className="bg-white rounded-lg shadow p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">AI Health Assistant Chat</h2>
-              <div className="h-96 overflow-y-auto mb-4 border rounded-lg p-4">
+              <div className="h-64 overflow-y-auto mb-4 border rounded-lg p-4">
                 {chatHistory.map((message, index) => (
                   <div
                     key={index}
